@@ -4,7 +4,7 @@
 
 <h1 align="center">StreamFinEX</h1>
 
-A **streaming-only Stremio client for homebrewed Nintendo Switch**. This is a fork of
+A **streaming-only Stremio client for homebrewed Nintendo Switch and PlayStation 4**. This is a fork of
 [StreamFin](https://github.com/scamNscoot/StreamFin) (itself built on
 [Switchfin](https://github.com/dragonflylee/switchfin), with the Jellyfin data layer replaced by
 the [Stremio addon protocol](https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/protocol.md)),
@@ -13,16 +13,20 @@ focus, a fully customizable home screen, a Library, anime support, and smooth co
 navigation.
 
 Browse Cinemeta catalogs, search, open a title page with cast & plot, pick a stream, and play —
-all natively on the Switch with MPV. No content is included: **you bring your own Stremio stream
+all natively on the console with MPV. No content is included: **you bring your own Stremio stream
 addon URL**, which the app asks for on first launch.
 
 This doesn't work with torrents, only HTTPS — most debrid services can provide HTTPS streams.
 
 ## Download
 
-Grab the latest `StreamFin.nro` from the
-[**Releases page**](https://github.com/Kirbosh/StreamFinEX/releases) and copy it to `/switch/`
-on your SD card. Every push to this repo builds a fresh release automatically.
+- **Nintendo Switch:** grab `StreamFin.nro` from the
+  [Releases page](https://github.com/Kirbosh/StreamFinEX/releases) and copy it to `/switch/` on your SD card.
+- **PlayStation 4:** download the latest `StreamFinEX-PS4` artifact from the
+  [PS4 build workflow](https://github.com/Kirbosh/StreamFinEX/actions/workflows/build-ps4.yaml), extract the
+  `.pkg`, copy it to USB, and install it through your jailbreak's Package Installer.
+
+The PS4 build requires a homebrew-capable/jailbroken console. It cannot be installed on a stock PS4.
 
 ## Screenshots
 
@@ -78,9 +82,9 @@ on your SD card. Every push to this repo builds a fresh release automatically.
   types until your addon answers, so titles that used to fail with an HTTP error now play
 - **Custom player controls** tuned for streaming (seek on the shoulder buttons, lock screen,
   stream info). Streams play as direct HTTPS URLs through MPV — nothing torrent-related runs
-  on the Switch itself
+  on the console itself
 
-## Setup
+## Nintendo Switch setup
 
 1. Copy `StreamFin.nro` to `/switch/` on your SD card.
 2. **Recommended:** while the SD card is still in your PC, create a plain-text file at
@@ -100,6 +104,19 @@ on your SD card. Every push to this repo builds a fresh release automatically.
    active URL is stored at `sdmc:/config/StreamFin/stremio_addon.json`.
 
 Catalog browsing works without an addon; you only need one to actually play streams.
+
+## PlayStation 4 setup
+
+1. Install the generated `.pkg` using your jailbreak's Package Installer.
+2. Launch StreamFinEX. On first launch, enter your stream addon URL using the native PS4 keyboard.
+3. For easier setup, upload a `streamfin-addon.txt` file to `/data/streamfin-addon.txt` using FTP before
+   launching the app. The file format is identical to the Switch example above.
+4. The imported settings are persisted at `/data/StreamFin/stremio_addon.json`. You can also place the
+   import file at `/data/StreamFin/addon.txt`.
+
+The PS4 port currently targets direct HTTPS playback up to 1080p. H.264/AAC is the recommended baseline;
+HEVC, AV1 and complex bitmap/ASS subtitles depend on software-decoder performance.
+Use the [PS4 smoke-test checklist](docs/PS4_TESTING.md) when validating a new build on hardware.
 
 ### Poster ratings (optional)
 
@@ -129,24 +146,26 @@ the player — pick one under **+ → Subtitle** (one per language, alongside an
 
 ## Controls
 
-| Context | Button | Action |
+| Context | Switch / PS4 | Action |
 |---|---|---|
-| Home | Stremio logo (A) | Customize home rows |
-| Home | Y | Search (also: top-bar search button) |
-| Home | X | Add/remove from Library |
-| Home | − | Set stream addon URL |
-| Row editor | A / Y / X / B | Toggle row · move up · move down · save |
-| Library | Y | Search within the library |
+| Home | Stremio logo (A / ×) | Customize home rows |
+| Home | Y / △ | Search (also: top-bar search button) |
+| Home | X / □ | Add/remove from Library |
+| Home | − / Share | Set stream addon URL |
+| Row editor | A/Y/X/B · ×/△/□/○ | Toggle row · move up · move down · save |
+| Library | Y / △ | Search within the library |
 | Library | Sort button | Cycle recent / name / year / rating |
-| Detail page | A on ▶ | Watch (movies) / Episodes (series & anime) |
+| Detail page | A / × on ▶ | Watch (movies) / Episodes (series & anime) |
 | Detail page | See more | Open the full scrollable description |
-| Detail page | X | Add/remove from Library |
+| Detail page | X / □ | Add/remove from Library |
 | Player | L / R | Seek back / forward |
-| Player | X | Lock screen |
-| Player | − | Stream info |
-| Player | + | Settings |
+| Player | X / □ | Lock screen |
+| Player | − / Share | Stream info |
+| Player | + / Options | Settings |
 
 ## Building from source
+
+### Nintendo Switch
 
 Prebuilt releases are made by [GitHub Actions](.github/workflows/build-switch.yaml). To build
 locally you need [devkitPro](https://devkitpro.org/) with devkitA64/libnx and Switchfin's custom
@@ -159,6 +178,22 @@ export PKG_CONFIG_PATH=/opt/devkitpro/portlibs/switch/lib/pkgconfig
 cmake -B build_switch -G Ninja -DPLATFORM_SWITCH=ON -DBUILTIN_NSP=OFF
 ninja -C build_switch StreamFin.nro
 ```
+
+### PlayStation 4
+
+The reproducible PS4 build runs in the PacBrew Linux container defined in
+[`build-ps4.yaml`](.github/workflows/build-ps4.yaml). Trigger that workflow manually on GitHub, or use a
+Linux host with the PacBrew OpenOrbis toolchain and portlibs installed:
+
+```bash
+export OPENORBIS=/opt/pacbrew/ps4/openorbis
+cmake -S . -B build_ps4 -DPLATFORM_PS4=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build_ps4 --parallel
+```
+
+The installable package is emitted as `build_ps4/*.pkg`; `build_ps4/StreamFin.oelf` is retained for crash
+symbolication. The PS4 application uses the unique Title ID `SFEX00001`, so it can coexist with the original
+Switchfin PS4 package.
 
 ## Credits
 

@@ -59,8 +59,9 @@ set(PROJECT_TITLEID "010ff000ffff0003")
 set(PROJECT_AUTHOR "Kirbosh")
 set(PACKAGE_NAME "fun.dragonfly.switchfin")
 set(VITA_TITLEID "SWITCHFIN")
-set(PSN_TITLE_ID "SFIN00000")
+set(PSN_TITLE_ID "SFEX00001")
 set(VITA_VERSION "00.91")
+set(PS4_VERSION "00.39")
 set(PROJECT_ICON ${CMAKE_CURRENT_SOURCE_DIR}/resources/icon/icon.jpg)
 set(PROJECT_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
@@ -297,8 +298,8 @@ elseif (PLATFORM_PS4)
     add_pkg(${PROJECT_NAME}
             ${CMAKE_BINARY_DIR}/ps4
             ${PSN_TITLE_ID}
-            "switchfin"
-            ${VITA_VERSION}
+            "StreamFinEX"
+            ${PS4_VERSION}
             8388608
     )
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

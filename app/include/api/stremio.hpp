@@ -164,17 +164,21 @@ inline void saveAddon(const std::string& configDir, const std::string& url) {
 }
 
 // Easier setup than typing on the on-screen keyboard: the user drops a
-// plain-text file on the SD card. Line format (any order, all optional):
+// plain-text file in a platform-appropriate writable location. Line format
+// (any order, all optional):
 //   https://your-stream-addon...      the stream addon base URL
 //   rpdb=YOUR_KEY                     rated posters via RatingPosterDB
 //   poster=https://...{imdbId}...     any custom poster provider template
 // Checked at every launch; when the file exists it is the source of truth
 // and is persisted, so editing it is also how you change settings later.
 inline void importAddonFromFile(const std::string& configDir) {
-    const std::string candidates[] = {
-        "sdmc:/switch/streamfin-addon.txt",   // next to where the .nro lives
-        configDir + "/addon.txt",             // alongside the app's other config
-    };
+    std::vector<std::string> candidates;
+#if defined(__SWITCH__)
+    candidates.emplace_back("sdmc:/switch/streamfin-addon.txt");  // next to the .nro
+#elif defined(__PS4__)
+    candidates.emplace_back("/data/streamfin-addon.txt");  // convenient FTP/upload location
+#endif
+    candidates.emplace_back(configDir + "/addon.txt");  // alongside the app's other config
     for (auto& path : candidates) {
         std::ifstream in(path);
         if (!in.is_open()) continue;

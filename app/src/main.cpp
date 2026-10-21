@@ -68,8 +68,8 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     // Load the user's stream addon URL (set on first launch via the UI), then
-    // let a streamfin-addon.txt dropped on the SD card set/override it — much
-    // easier than typing a long URL on the on-screen keyboard.
+    // Let a platform-specific streamfin-addon.txt set/override it. This is
+    // much easier than typing a long URL on a console's on-screen keyboard.
     stremio::loadAddon(conf.configDir());
     stremio::importAddonFromFile(conf.configDir());
 

@@ -44,18 +44,32 @@ void openSearch() {
 
 // First-run / on-demand prompt for the stream addon URL (on-screen keyboard).
 void promptForAddon(const std::string& initial) {
+#if defined(__PS4__)
+    const std::string fileHint =
+        "Type your addon URL — or upload streamfin-addon.txt to /data/ and relaunch";
+#elif defined(__SWITCH__)
+    const std::string fileHint =
+        "Type your addon URL — or put streamfin-addon.txt in /switch/ on the SD card and relaunch";
+#else
+    const std::string fileHint =
+        "Type your addon URL — or put addon.txt in the app config directory and relaunch";
+#endif
     brls::Application::getImeManager()->openForText(
         [](const std::string& text) {
             std::string url = stremio::normalizeAddonUrl(text);
             if (url.empty()) {
+#if defined(__PS4__)
+                brls::Application::notify("No addon set — press Share to set it later");
+#else
                 brls::Application::notify("No addon set — press − to set it later");
+#endif
                 return;
             }
             stremio::saveAddon(AppConfig::instance().configDir(), url);
             brls::Application::notify("Stream addon saved");
         },
         "Stream addon URL",
-        "Type your addon URL — or easier: put it in a text file at switch/streamfin-addon.txt on the SD card and relaunch",
+        fileHint,
         1024, initial, 0);
 }
 

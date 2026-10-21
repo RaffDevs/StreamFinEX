@@ -287,8 +287,11 @@ bool AppConfig::init() {
     }
 #elif defined(__PS4__)
     if (sceSysmoduleLoadModuleInternal(ORBIS_SYSMODULE_INTERNAL_NET) < 0) brls::Logger::error("cannot load net module");
-    primary_dns = inet_addr("223.5.5.5");
-    secondary_dns = inet_addr("1.1.1.1");
+    // Zero means "use the DNS servers configured on the console" in the
+    // OpenOrbis musl resolver. Avoid routing every request through a
+    // region-specific public resolver.
+    primary_dns = 0;
+    secondary_dns = 0;
     ps4_mpv_use_precompiled_shaders = 1;
     ps4_mpv_dump_shaders = 0;
     // 在加载第一帧之后隐藏启动画面

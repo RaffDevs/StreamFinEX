@@ -1,0 +1,83 @@
+name: Build PS4 PKG
+
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths:
+      - .github/workflows/build-ps4.yaml
+      - app/**
+      - library/**
+      - resources/**
+      - scripts/ps4/**
+      - CMakeLists.txt
+      - cmake/**
+  pull_request:
+    paths:
+      - .github/workflows/build-ps4.yaml
+      - app/**
+      - library/**
+      - resources/**
+      - scripts/ps4/**
+      - CMakeLists.txt
+      - cmake/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-ps4:
+    runs-on: ubuntu-latest
+    container:
+      image: xfangfang/pacbrew:250221
+    env:
+      BASE_URL: https://github.com/dragonflylee/switchfin/releases/download/pacbrew
+      OPENORBIS: /opt/pacbrew/ps4/openorbis
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install PS4 toolchain dependencies
+        run: |
+          for pkg in \
+            musl-1.5-3 \
+            mbedtls-2.28.10-2 \
+            sdl2-2.0.18-19 \
+            libcurl-7.80.0-5 \
+            dav1d-1.5.4-1 \
+            ffmpeg-7.1.5-3 \
+            libmpv-0.36.0-2; do
+            pacman --noconfirm -U "$BASE_URL/ps4-openorbis-$pkg-any.pkg.tar.gz"
+          done
+          git config --system --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Configure
+        run: |
+          cmake -S . -B build-ps4 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPLATFORM_PS4=ON \
+            -DVERSION_BUILD="${{ github.run_number }}"
+
+      - name: Build PKG
+        run: cmake --build build-ps4 --parallel
+
+      - name: Verify artifacts
+        run: |
+          test -n "$(find build-ps4 -maxdepth 1 -name '*.pkg' -print -quit)"
+          test -f build-ps4/StreamFin.oelf
+          sha256sum build-ps4/*.pkg
+
+      - name: Upload installable PKG
+        uses: actions/upload-artifact@v7
+        with:
+          name: StreamFinEX-PS4-${{ github.run_number }}
+          path: build-ps4/*.pkg
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload debug binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: StreamFinEX-PS4-debug-${{ github.run_number }}
+          path: build-ps4/StreamFin.oelf
+          if-no-files-found: error
+          compression-level: 0
