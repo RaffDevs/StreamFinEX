@@ -1,0 +1,79 @@
+name: Build PS Vita VPK
+
+on:
+  push:
+    branches: [main, vita-port, "claude/**"]
+    paths:
+      - .github/workflows/build-vita.yaml
+      - app/**
+      - library/**
+      - resources/**
+      - CMakeLists.txt
+      - cmake/**
+  pull_request:
+    paths:
+      - .github/workflows/build-vita.yaml
+      - app/**
+      - library/**
+      - resources/**
+      - CMakeLists.txt
+      - cmake/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-vita:
+    runs-on: ubuntu-latest
+    container:
+      image: vitasdk/vitasdk:2026.08
+    env:
+      BASE_URL: https://github.com/dragonflylee/switchfin/releases/download/vita-packages
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Vita dependencies
+        run: |
+          for pkg in \
+            mbedtls-3.6.7-1 \
+            curl-8.16.0-3 \
+            ffmpeg-n6.0-3 \
+            mpv-0.36.0-3; do
+            vdpm pacman --noconfirm -U "$BASE_URL/${pkg}-vita.pkg.tar.xz"
+          done
+          git config --system --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Configure
+        run: |
+          cmake -S . -B build-vita -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DPLATFORM_PSV=ON \
+            -DUSE_GXM=ON \
+            -DUSE_VITA_SHARK=OFF \
+            -DSIMPLE_HIGHLIGHT=ON \
+            -DVERSION_BUILD="${{ github.run_number }}"
+
+      - name: Build VPK
+        run: cmake --build build-vita
+
+      - name: Verify artifacts
+        run: |
+          test -f build-vita/StreamFin.vpk
+          sha256sum build-vita/StreamFin.vpk
+
+      - name: Upload installable VPK
+        uses: actions/upload-artifact@v7
+        with:
+          name: StreamFinEX-Vita-${{ github.run_number }}
+          path: build-vita/StreamFin.vpk
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload debug binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: StreamFinEX-Vita-debug-${{ github.run_number }}
+          path: build-vita/StreamFin*.velf
+          if-no-files-found: warn
+          compression-level: 0

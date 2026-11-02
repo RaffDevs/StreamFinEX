@@ -58,9 +58,9 @@ set(VERSION_ALTER "9")
 set(PROJECT_TITLEID "010ff000ffff0003")
 set(PROJECT_AUTHOR "Kirbosh")
 set(PACKAGE_NAME "fun.dragonfly.switchfin")
-set(VITA_TITLEID "SWITCHFIN")
+set(VITA_TITLEID "SFEX00001")
 set(PSN_TITLE_ID "SFEX00001")
-set(VITA_VERSION "00.91")
+set(VITA_VERSION "00.10")
 set(PS4_VERSION "00.39")
 set(PROJECT_ICON ${CMAKE_CURRENT_SOURCE_DIR}/resources/icon/icon.jpg)
 set(PROJECT_RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/resources)
@@ -290,7 +290,7 @@ elseif (PLATFORM_PSV)
     vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME} UNSAFE NOASLR)
     vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} ${PROJECT_NAME}.self
         VERSION ${VITA_VERSION}
-        NAME ${PROJECT_NAME}
+        NAME "StreamFinEX"
         FILE ${PSV_ASSETS_FILES}
     )
 elseif (PLATFORM_PS4)
