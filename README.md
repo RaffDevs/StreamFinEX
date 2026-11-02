@@ -4,7 +4,7 @@
 
 <h1 align="center">StreamFinEX</h1>
 
-A **streaming-only Stremio client for homebrewed Nintendo Switch and PlayStation 4**. This is a fork of
+A **streaming-only Stremio client for homebrewed Nintendo Switch, PlayStation 4 and PS Vita**. This is a fork of
 [StreamFin](https://github.com/scamNscoot/StreamFin) (itself built on
 [Switchfin](https://github.com/dragonflylee/switchfin), with the Jellyfin data layer replaced by
 the [Stremio addon protocol](https://github.com/Stremio/stremio-addon-sdk/blob/master/docs/protocol.md)),
@@ -25,8 +25,11 @@ This doesn't work with torrents, only HTTPS — most debrid services can provide
 - **PlayStation 4:** download the latest `StreamFinEX-PS4` artifact from the
   [PS4 build workflow](https://github.com/Kirbosh/StreamFinEX/actions/workflows/build-ps4.yaml), extract the
   `.pkg`, copy it to USB, and install it through your jailbreak's Package Installer.
+- **PS Vita / PS TV:** download the latest `StreamFinEX-Vita` artifact from the
+  [Vita build workflow](https://github.com/Kirbosh/StreamFinEX/actions/workflows/build-vita.yaml), extract
+  `StreamFin.vpk`, and install it with VitaShell.
 
-The PS4 build requires a homebrew-capable/jailbroken console. It cannot be installed on a stock PS4.
+The PS4 and Vita builds require a homebrew-capable console. They cannot be installed on stock firmware.
 
 ## Screenshots
 
@@ -118,6 +121,23 @@ The PS4 port currently targets direct HTTPS playback up to 1080p. H.264/AAC is t
 HEVC, AV1 and complex bitmap/ASS subtitles depend on software-decoder performance.
 Use the [PS4 smoke-test checklist](docs/PS4_TESTING.md) when validating a new build on hardware.
 
+## PS Vita setup
+
+1. Install `StreamFin.vpk` with VitaShell. It installs as **StreamFinEX** (Title ID `SFEX00001`) and can
+   coexist with Switchfin.
+2. **Recommended:** before launching, copy a `streamfin-addon.txt` file to `ux0:/data/streamfin-addon.txt`
+   (VitaShell FTP or USB). The format is identical to the Switch example above.
+3. Alternatively, type the URL into the Vita keyboard on first launch. Press **Select** on the home screen
+   to change it later.
+4. The imported settings are persisted at `ux0:/data/StreamFin/stremio_addon.json`; `ux0:/data/StreamFin/addon.txt`
+   also works as an import file.
+
+The Vita only decodes **H.264 up to 720p** smoothly. The stream picker lists streams that look like
+H.264/720p first, and tags 4K, HEVC/x265, AV1 and HDR streams with "(may not play on Vita)". Configure your
+addon to return 720p/1080p H.264 results where possible. To save memory, only the first 6 home rows are
+enabled by default and the player cache defaults to 20 MB. Wi-Fi on the Vita is slow, so high-bitrate
+streams will buffer; a PS TV on Ethernet does better.
+
 ### Poster ratings (optional)
 
 Out of the box, every poster shows a small **★ IMDb badge** using data already present in the
@@ -146,12 +166,12 @@ the player — pick one under **+ → Subtitle** (one per language, alongside an
 
 ## Controls
 
-| Context | Switch / PS4 | Action |
+| Context | Switch / PS4 / Vita | Action |
 |---|---|---|
 | Home | Stremio logo (A / ×) | Customize home rows |
 | Home | Y / △ | Search (also: top-bar search button) |
 | Home | X / □ | Add/remove from Library |
-| Home | − / Share | Set stream addon URL |
+| Home | − / Share / Select | Set stream addon URL |
 | Row editor | A/Y/X/B · ×/△/□/○ | Toggle row · move up · move down · save |
 | Library | Y / △ | Search within the library |
 | Library | Sort button | Cycle recent / name / year / rating |
@@ -160,8 +180,8 @@ the player — pick one under **+ → Subtitle** (one per language, alongside an
 | Detail page | X / □ | Add/remove from Library |
 | Player | L / R | Seek back / forward |
 | Player | X / □ | Lock screen |
-| Player | − / Share | Stream info |
-| Player | + / Options | Settings |
+| Player | − / Share / Select | Stream info |
+| Player | + / Options / Start | Settings |
 
 ## Building from source
 
@@ -194,6 +214,22 @@ cmake --build build_ps4 --parallel
 The installable package is emitted as `build_ps4/*.pkg`; `build_ps4/StreamFin.oelf` is retained for crash
 symbolication. The PS4 application uses the unique Title ID `SFEX00001`, so it can coexist with the original
 Switchfin PS4 package.
+
+### PS Vita
+
+The Vita build runs in the `vitasdk/vitasdk` container defined in
+[`build-vita.yaml`](.github/workflows/build-vita.yaml), using Switchfin's prebuilt
+[vita-packages](https://github.com/dragonflylee/switchfin/releases/tag/vita-packages) (mbedtls, curl,
+ffmpeg, mpv). Locally, with VitaSDK and those packages installed through `vdpm`:
+
+```bash
+export VITASDK=/usr/local/vitasdk
+cmake -S . -B build_vita -G Ninja -DPLATFORM_PSV=ON -DUSE_GXM=ON -DUSE_VITA_SHARK=OFF \
+  -DSIMPLE_HIGHLIGHT=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build_vita
+```
+
+The installable package is emitted as `build_vita/StreamFin.vpk`.
 
 ## Credits
 
