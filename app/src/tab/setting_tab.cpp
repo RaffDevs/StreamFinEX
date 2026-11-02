@@ -224,7 +224,12 @@ void SettingTab::onCreate() {
 
     auto& inmemoryOption = conf.getOptions(AppConfig::PLAYER_INMEMORY_CACHE);
     selectorInmemory->init("main/setting/playback/in_memory_cache"_i18n, inmemoryOption.options,
-        conf.getValueIndex(AppConfig::PLAYER_INMEMORY_CACHE, 4), [&inmemoryOption](int selected) {
+#if defined(__PSV__)
+        conf.getValueIndex(AppConfig::PLAYER_INMEMORY_CACHE, 2),
+#else
+        conf.getValueIndex(AppConfig::PLAYER_INMEMORY_CACHE, 4),
+#endif
+        [&inmemoryOption](int selected) {
             if (MPVCore::INMEMORY_CACHE == inmemoryOption.values[selected]) return;
             MPVCore::INMEMORY_CACHE = inmemoryOption.values[selected];
             AppConfig::instance().setItem(AppConfig::PLAYER_INMEMORY_CACHE, MPVCore::INMEMORY_CACHE);

@@ -104,7 +104,8 @@ public:
     void onItemSelected(brls::Box* recycler, size_t index) override {
         auto v = this->list.at(index);
         if (stremio::STREAM_ADDON.empty()) {
-            brls::Application::notify("Set your stream addon first (press − on the home screen)");
+            brls::Application::notify(
+                "Set your stream addon first (press " + stremio::ADDON_BUTTON + " on the home screen)");
             return;
         }
         brls::Application::notify("Finding streams…");

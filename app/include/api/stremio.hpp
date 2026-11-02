@@ -71,6 +71,15 @@ inline const std::string KITSU = "https://anime-kitsu.strem.fun";
 // directory. Empty until the user provides one (catalog browsing still works).
 inline std::string STREAM_ADDON;
 
+// Label of the button bound to brls::BUTTON_BACK (opens the addon prompt).
+#if defined(__PS4__)
+inline const std::string ADDON_BUTTON = "Share";
+#elif defined(__PSV__)
+inline const std::string ADDON_BUTTON = "Select";
+#else
+inline const std::string ADDON_BUTTON = "−";
+#endif
+
 // Optional poster provider: a URL template with an {imdbId} placeholder,
 // e.g. RPDB's rating-embedded posters. When set, all poster images load from
 // it (and the text ★ badge is hidden — the rating is baked into the image).
@@ -177,6 +186,8 @@ inline void importAddonFromFile(const std::string& configDir) {
     candidates.emplace_back("sdmc:/switch/streamfin-addon.txt");  // next to the .nro
 #elif defined(__PS4__)
     candidates.emplace_back("/data/streamfin-addon.txt");  // convenient FTP/upload location
+#elif defined(__PSV__)
+    candidates.emplace_back("ux0:/data/streamfin-addon.txt");  // reachable via VitaShell FTP/USB
 #endif
     candidates.emplace_back(configDir + "/addon.txt");  // alongside the app's other config
     for (auto& path : candidates) {

@@ -63,6 +63,10 @@ static std::vector<std::pair<std::string, bool>> defaults() {
              "series-Crime", "movie-Mystery", "series-Mystery", "movie-Romance", "movie-Western",
              "movie-Documentary", "series-Documentary"})
         rows.push_back({k, true});
+#if defined(__PSV__)
+    // Every enabled row keeps its posters in memory; the Vita heap fits only a few.
+    for (size_t i = 6; i < rows.size(); ++i) rows[i].second = false;
+#endif
     for (auto& d : registry()) {
         bool present = false;
         for (auto& r : rows)

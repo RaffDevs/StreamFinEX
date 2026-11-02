@@ -191,6 +191,9 @@ void MPVCore::init() {
     mpv_set_option_string(mpv, "fbo-format", "rgba8");
     // Fix vo_wait_frame() cannot be wakeup
     mpv_set_option_string(mpv, "video-latency-hacks", "yes");
+    // Back-buffer only serves short rewinds; spend the scarce heap on read-ahead.
+    if (MPVCore::INMEMORY_CACHE) mpv_set_option_string(mpv, "demuxer-max-back-bytes", "4MiB");
+    mpv_set_option_string(mpv, "stream-buffer-size", "256KiB");
 #elif defined(ANDROID)
     mpv_set_option_string(mpv, "gpu-context", "android");
     mpv_set_option_string(mpv, "opengl-es", "yes");

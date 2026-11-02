@@ -92,6 +92,24 @@ private:
     std::vector<stremio::Subtitle> pending;
 };
 
+#if defined(__PSV__)
+// The Vita decodes H.264 in hardware up to ~720p; anything heavier stutters or
+// fails. Rank by the labels addons put in name/title/description:
+// 0 = likely playable, 1 = unknown or 1080p, 2 = unlikely to play.
+int vitaRank(const stremio::Stream& s) {
+    std::string t = s.name + " " + s.title + " " + s.description;
+    std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c) { return std::tolower(c); });
+    auto has = [&t](const char* k) { return t.find(k) != std::string::npos; };
+    if (has("2160p") || has("4k") || has("uhd") || has("hevc") || has("x265") || has("h265") || has("h.265") ||
+        has("av1") || has("hdr") || has("dolby vision") || has("dovi"))
+        return 2;
+    if (has("1080p")) return 1;
+    if (has("720p") || has("576p") || has("480p") || has("x264") || has("h264") || has("h.264") || has("avc"))
+        return 0;
+    return 1;
+}
+#endif
+
 // Clean text row built in code: name on top, full description below.
 class StreamCell : public RecyclingGridItem {
 public:
@@ -129,6 +147,9 @@ public:
         std::replace(name.begin(), name.end(), '\n', ' ');
         std::string desc = !s.description.empty() ? s.description : s.title;
         std::replace(desc.begin(), desc.end(), '\n', ' ');
+#if defined(__PSV__)
+        if (vitaRank(s) == 2) desc += " (may not play on Vita)";
+#endif
 
         cell->name->setText(name.empty() ? "Stream" : name);
         cell->detail->setText(desc);
@@ -189,6 +210,10 @@ StreamPicker::StreamPicker(
     std::vector<stremio::Stream> playable;
     for (auto& s : streams)
         if (!s.url.empty()) playable.push_back(s);
+#if defined(__PSV__)
+    std::stable_sort(playable.begin(), playable.end(),
+        [](const stremio::Stream& a, const stremio::Stream& b) { return vitaRank(a) < vitaRank(b); });
+#endif
 
     if (playable.empty()) {
         // Everything the addon offered was filtered out (often by the addon's

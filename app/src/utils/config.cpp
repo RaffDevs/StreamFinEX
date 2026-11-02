@@ -330,7 +330,12 @@ bool AppConfig::init() {
     // 初始化内存缓存大小
     // 100MB forward buffer ≈ tens of seconds of even high-bitrate streams;
     // the old 10MB default stalled on every Wi-Fi hiccup.
+#if defined(__PSV__)
+    // The whole app shares a ~220MB heap on Vita; keep the demuxer cache small.
+    MPVCore::INMEMORY_CACHE = this->getItem(PLAYER_INMEMORY_CACHE, 20);
+#else
     MPVCore::INMEMORY_CACHE = this->getItem(PLAYER_INMEMORY_CACHE, 100);
+#endif
     // 是否使用低质量解码
 #if defined(__PSV__) || defined(__PS4__) || defined(__SWITCH__)
     MPVCore::LOW_QUALITY = this->getItem(PLAYER_LOW_QUALITY, true);

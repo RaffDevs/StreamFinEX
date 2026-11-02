@@ -345,7 +345,8 @@ void StremioDetail::onAction() {
 void StremioDetail::openStreams() {
     if (this->fetching) return;  // ignore repeat presses while a request runs
     if (stremio::STREAM_ADDON.empty()) {
-        brls::Application::notify("Set your stream addon first (press − on the home screen)");
+        brls::Application::notify(
+            "Set your stream addon first (press " + stremio::ADDON_BUTTON + " on the home screen)");
         return;
     }
     this->fetching = true;

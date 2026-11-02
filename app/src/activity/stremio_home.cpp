@@ -50,6 +50,9 @@ void promptForAddon(const std::string& initial) {
 #elif defined(__SWITCH__)
     const std::string fileHint =
         "Type your addon URL — or put streamfin-addon.txt in /switch/ on the SD card and relaunch";
+#elif defined(__PSV__)
+    const std::string fileHint =
+        "Type your addon URL — or put streamfin-addon.txt in ux0:/data/ and relaunch";
 #else
     const std::string fileHint =
         "Type your addon URL — or put addon.txt in the app config directory and relaunch";
@@ -58,11 +61,7 @@ void promptForAddon(const std::string& initial) {
         [](const std::string& text) {
             std::string url = stremio::normalizeAddonUrl(text);
             if (url.empty()) {
-#if defined(__PS4__)
-                brls::Application::notify("No addon set — press Share to set it later");
-#else
-                brls::Application::notify("No addon set — press − to set it later");
-#endif
+                brls::Application::notify("No addon set — press " + stremio::ADDON_BUTTON + " to set it later");
                 return;
             }
             stremio::saveAddon(AppConfig::instance().configDir(), url);
@@ -301,7 +300,7 @@ public:
     void onItemSelected(brls::Box* recycler, size_t index) override {
         auto e = this->list.at(index);
         if (stremio::STREAM_ADDON.empty()) {
-            brls::Application::notify("Set your stream addon first (press −)");
+            brls::Application::notify("Set your stream addon first (press " + stremio::ADDON_BUTTON + ")");
             return;
         }
         brls::Application::notify("Finding streams…");
